@@ -1,0 +1,76 @@
+name: Terraform CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Apply infrastructure changes (true/false)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+  id-token: write  # enable OIDC if you later migrate off static keys
+
+env:
+  TF_VERSION: 1.9.5
+  AWS_REGION: ap-southeast-1  # change to your desired region
+
+jobs:
+  terraform:
+    name: Terraform Plan & (Conditional) Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials
+        # Using static secrets; consider migrating to OIDC with role assumption instead.
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_AK }}
+          aws-secret-access-key: ${{ secrets.AWS_SK }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false -out=tfplan
+
+      - name: Save Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: tfplan
+
+      - name: Show Plan Summary
+        run: terraform show -no-color tfplan | head -n 200
+
+      - name: Terraform Apply (conditional)
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.apply == 'true') }}
+        run: terraform apply -auto-approve tfplan
+
+      - name: Post Apply Output
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.apply == 'true') }}
+        run: terraform output -json | jq '.'
+
+    # Optional concurrency to avoid overlapping applies
+    concurrency:
+      group: terraform-${{ github.ref }}
+      cancel-in-progress: false
