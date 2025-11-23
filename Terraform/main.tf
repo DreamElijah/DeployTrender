@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "trend" {
 }
 
 resource "aws_ecr_repository" "repo" {
-  name                 = "trendradar"
+  name = "trendradar"
   image_scanning_configuration { scan_on_push = true }
 }
 
@@ -18,8 +18,8 @@ resource "aws_ecs_task_definition" "crawler" {
 
   container_definitions = jsonencode([
     {
-      name  = "crawler"
-      image = "${aws_ecr_repository.repo.repository_url}:latest"
+      name      = "crawler"
+      image     = "${aws_ecr_repository.repo.repository_url}:latest"
       essential = true
       environment = [
         { name = "REPORT_MODE", value = "incremental" }
@@ -54,8 +54,8 @@ resource "aws_cloudwatch_event_target" "ecs_run" {
     task_definition_arn = aws_ecs_task_definition.crawler.arn
     launch_type         = "FARGATE"
     network_configuration {
-      subnets         = var.private_subnets
-      security_groups = [aws_security_group.crawler.id]
+      subnets          = var.private_subnets
+      security_groups  = [aws_security_group.crawler.id]
       assign_public_ip = false
     }
   }
@@ -101,9 +101,9 @@ resource "aws_iam_role" "exec" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = { Service = "ecs-tasks.amazonaws.com" }
-        Action   = "sts:AssumeRole"
+        Action    = "sts:AssumeRole"
       }
     ]
   })
@@ -121,9 +121,9 @@ resource "aws_iam_role" "task" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = { Service = "ecs-tasks.amazonaws.com" }
-        Action   = "sts:AssumeRole"
+        Action    = "sts:AssumeRole"
       }
     ]
   })
@@ -132,7 +132,7 @@ resource "aws_iam_role" "task" {
 resource "aws_iam_policy" "task_secret_read" {
   name        = "trendradar-task-secret-read"
   description = "Allow task to read ntfy webhook secret value"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -156,9 +156,9 @@ resource "aws_iam_role" "events" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = { Service = "events.amazonaws.com" }
-        Action   = "sts:AssumeRole"
+        Action    = "sts:AssumeRole"
       }
     ]
   })
@@ -167,20 +167,20 @@ resource "aws_iam_role" "events" {
 resource "aws_iam_policy" "events_run_task" {
   name        = "trendradar-events-run-task"
   description = "Allow EventBridge to run ECS Fargate task"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = ["ecs:RunTask", "ecs:DescribeTasks"]
+        Effect   = "Allow"
+        Action   = ["ecs:RunTask", "ecs:DescribeTasks"]
         Resource = aws_ecs_task_definition.crawler.arn
         Condition = {
           ArnLike = { "ecs:cluster" = aws_ecs_cluster.trend.arn }
         }
       },
       {
-        Effect = "Allow"
-        Action = ["iam:PassRole"]
+        Effect   = "Allow"
+        Action   = ["iam:PassRole"]
         Resource = [aws_iam_role.exec.arn, aws_iam_role.task.arn]
       }
     ]
