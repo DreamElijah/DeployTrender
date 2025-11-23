@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./
+        working-directory: Terraform
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
