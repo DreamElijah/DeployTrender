@@ -68,7 +68,8 @@ jobs:
 
       - name: Post Apply Output
         if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.apply == 'true') }}
-        run: terraform output -json | jq '.'
+        run: |
+          terraform output -json 2>/dev/null | jq '.' || echo '{}'
 
     # Optional concurrency to avoid overlapping applies
     concurrency:
