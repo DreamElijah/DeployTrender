@@ -1,0 +1,9 @@
+# Example values for required variables
+# Replace with your actual subnet IDs and ntfy webhook/topic URL
+
+private_subnets = [
+  "subnet-xxxxxxxxxxxxxxxxx",
+  "subnet-yyyyyyyyyyyyyyyyy"
+]
+
+ntfy_webhook_value = "https://ntfy.sh/your-topic-or-webhook-url"
