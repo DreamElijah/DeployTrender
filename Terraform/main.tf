@@ -126,6 +126,49 @@ resource "aws_cloudwatch_event_target" "ecs_run" {
   }
 }
 
+# ---------------------- Network for Outbound Internet ----------------------
+
+# EIP for NAT Gateway
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  tags = {
+    Name = "trendradar-nat-eip"
+  }
+}
+
+# NAT Gateway - place in a public subnet
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = var.public_subnet_ids[0] # Uses the first public subnet
+
+  tags = {
+    Name = "trendradar-nat-gateway"
+  }
+
+  depends_on = [aws_eip.nat]
+}
+
+# Route table for private subnets to route traffic via NAT Gateway
+resource "aws_route_table" "private" {
+  vpc_id = var.vpc_id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+
+  tags = {
+    Name = "trendradar-private-rt"
+  }
+}
+
+# Associate private route table with each private subnet
+resource "aws_route_table_association" "private" {
+  count          = length(var.private_subnets)
+  subnet_id      = element(var.private_subnets, count.index)
+  route_table_id = aws_route_table.private.id
+}
+
 # ---------------------- Added supporting resources ----------------------
 
 # CloudWatch log group referenced by task definition
@@ -302,6 +345,11 @@ variable "region" {
 variable "private_subnets" {
   type        = list(string)
   description = "Private subnet IDs for Fargate tasks"
+}
+
+variable "public_subnet_ids" {
+  type        = list(string)
+  description = "Public subnet IDs for NAT Gateway"
 }
 
 variable "vpc_id" {
