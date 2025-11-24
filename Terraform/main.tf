@@ -2,11 +2,11 @@
 
 # ECR API endpoint (for ECR API calls)
 resource "aws_vpc_endpoint" "ecr_api" {
-  vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${var.region}.ecr.api"
-  vpc_endpoint_type  = "Interface"
-  subnet_ids         = var.private_subnets
-  security_group_ids = [aws_security_group.crawler.id]
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.region}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.private_subnets
+  security_group_ids  = [aws_security_group.crawler.id]
   private_dns_enabled = true
   tags = {
     Name = "ecr-api-endpoint"
@@ -15,11 +15,11 @@ resource "aws_vpc_endpoint" "ecr_api" {
 
 # ECR DKR endpoint (for Docker image pulls)
 resource "aws_vpc_endpoint" "ecr_dkr" {
-  vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${var.region}.ecr.dkr"
-  vpc_endpoint_type  = "Interface"
-  subnet_ids         = var.private_subnets
-  security_group_ids = [aws_security_group.crawler.id]
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.region}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.private_subnets
+  security_group_ids  = [aws_security_group.crawler.id]
   private_dns_enabled = true
   tags = {
     Name = "ecr-dkr-endpoint"
