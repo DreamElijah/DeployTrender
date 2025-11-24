@@ -142,6 +142,27 @@ resource "aws_iam_role_policy_attachment" "exec_ecs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Allow ECS execution role to read the ntfy1 secret
+resource "aws_iam_policy" "exec_secret_read" {
+  name        = "trendradar-exec-secret-read"
+  description = "Allow ECS execution role to read ntfy1 secret value"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["secretsmanager:GetSecretValue"]
+        Resource = aws_secretsmanager_secret.ntfy1.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "exec_secret" {
+  role       = aws_iam_role.exec.name
+  policy_arn = aws_iam_policy.exec_secret_read.arn
+}
+
 # IAM role for the application task (grants read to the webhook secret only)
 resource "aws_iam_role" "task" {
   name = "trendradar-ecs-task"
