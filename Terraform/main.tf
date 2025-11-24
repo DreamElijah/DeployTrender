@@ -1,5 +1,15 @@
 # ---------------------- VPC Endpoints for ECR ----------------------
 
+# S3 Gateway Endpoint (for ECR to pull image layers from S3)
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = var.vpc_id
+  service_name      = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type = "Gateway"
+  tags = {
+    Name = "s3-gateway-endpoint"
+  }
+}
+
 # CloudWatch Logs endpoint (for ECS to send logs)
 resource "aws_vpc_endpoint" "logs" {
   vpc_id              = var.vpc_id
