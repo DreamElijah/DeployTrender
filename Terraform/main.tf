@@ -345,11 +345,13 @@ variable "region" {
 variable "private_subnets" {
   type        = list(string)
   description = "Private subnet IDs for Fargate tasks"
+  default     = ["subnet-0522e7d64bc53cb8c", "subnet-0b1200f8096b84e3a"]
 }
 
 variable "public_subnet_ids" {
   type        = list(string)
   description = "Public subnet IDs for NAT Gateway"
+  default     = ["subnet-00d08ce0ab941e155", "subnet-053e86c9adea89354"]
 }
 
 variable "vpc_id" {
