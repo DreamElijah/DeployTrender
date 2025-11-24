@@ -158,9 +158,18 @@ resource "aws_route" "private_nat_gateway" {
 
 # ---------------------- NACL for Outbound Internet ----------------------
 
+# Find the default Network ACL for the VPC
+data "aws_network_acls" "default" {
+  vpc_id = var.vpc_id
+  filter {
+    name   = "default"
+    values = ["true"]
+  }
+}
+
 # Allow return traffic for outbound requests on ephemeral ports
 resource "aws_network_acl_rule" "allow_return" {
-  network_acl_id = data.aws_vpc.selected.default_network_acl_id
+  network_acl_id = data.aws_network_acls.default.ids[0]
   rule_number    = 101   # Must be < default deny rule (32767)
   egress         = false # Ingress rule
   protocol       = "tcp"
