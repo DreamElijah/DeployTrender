@@ -148,25 +148,12 @@ resource "aws_nat_gateway" "nat" {
   depends_on = [aws_eip.nat]
 }
 
-# Route table for private subnets to route traffic via NAT Gateway
-resource "aws_route_table" "private" {
-  vpc_id = var.vpc_id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat.id
-  }
-
-  tags = {
-    Name = "trendradar-private-rt"
-  }
-}
-
-# Associate private route table with each private subnet
-resource "aws_route_table_association" "private" {
-  count          = length(var.private_subnets)
-  subnet_id      = element(var.private_subnets, count.index)
-  route_table_id = aws_route_table.private.id
+# Add route to existing private route tables
+resource "aws_route" "private_nat_gateway" {
+  count                  = length(var.private_route_table_ids)
+  route_table_id         = element(var.private_route_table_ids, count.index)
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat.id
 }
 
 # ---------------------- Added supporting resources ----------------------
@@ -352,6 +339,12 @@ variable "public_subnet_ids" {
   type        = list(string)
   description = "Public subnet IDs for NAT Gateway"
   default     = ["subnet-00d08ce0ab941e155", "subnet-053e86c9adea89354"]
+}
+
+variable "private_route_table_ids" {
+  type        = list(string)
+  description = "List of existing route table IDs for the private subnets"
+  default     = ["rtb-0cdcff4ced2b3a9b2", "rtb-0a8a3bcea4284c45b"]
 }
 
 variable "vpc_id" {
