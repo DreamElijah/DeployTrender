@@ -156,6 +156,26 @@ resource "aws_route" "private_nat_gateway" {
   nat_gateway_id         = aws_nat_gateway.nat.id
 }
 
+# ---------------------- NACL for Outbound Internet ----------------------
+
+# Get the default NACL for the VPC
+data "aws_network_acl" "default" {
+  vpc_id  = var.vpc_id
+  default = true
+}
+
+# Allow return traffic for outbound requests on ephemeral ports
+resource "aws_network_acl_rule" "allow_return" {
+  network_acl_id = data.aws_network_acl.default.id
+  rule_number    = 101   # Must be < default deny rule (32767)
+  egress         = false # Ingress rule
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 1024
+  to_port        = 65535
+}
+
 # ---------------------- Added supporting resources ----------------------
 
 # CloudWatch log group referenced by task definition
