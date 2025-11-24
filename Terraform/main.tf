@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "crawler" {
         { name = "REPORT_MODE", value = "incremental" }
       ]
       secrets = [
-        { name = "NTFY_WEBHOOK_URL", valueFrom = aws_secretsmanager_secret.ntfy.arn }
+        { name = "NTFY_WEBHOOK_URL", valueFrom = aws_secretsmanager_secret.ntfy1.arn }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -99,13 +99,13 @@ resource "aws_security_group" "crawler" {
 }
 
 # Secrets Manager secret for ntfy webhook / topic URL
-resource "aws_secretsmanager_secret" "ntfy" {
-  name        = "trendradar/ntfy_webhook_url"
+resource "aws_secretsmanager_secret" "ntfy1" {
+  name        = "trendradar/ntfy1_webhook_url"
   description = "ntfy webhook or topic URL for notifications"
 }
 
-resource "aws_secretsmanager_secret_version" "ntfy" {
-  secret_id     = aws_secretsmanager_secret.ntfy.id
+resource "aws_secretsmanager_secret_version" "ntfy1" {
+  secret_id     = aws_secretsmanager_secret.ntfy1.id
   secret_string = var.ntfy_webhook_value
 }
 
@@ -153,7 +153,7 @@ resource "aws_iam_policy" "task_secret_read" {
       {
         Effect   = "Allow"
         Action   = ["secretsmanager:GetSecretValue"]
-        Resource = aws_secretsmanager_secret.ntfy.arn
+        Resource = aws_secretsmanager_secret.ntfy1.arn
       }
     ]
   })
