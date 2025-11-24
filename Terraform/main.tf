@@ -90,7 +90,9 @@ resource "aws_ecs_task_definition" "crawler" {
         { name = "REPORT_MODE", value = "incremental" }
       ]
       secrets = [
-        { name = "NTFY_WEBHOOK_URL", valueFrom = aws_secretsmanager_secret.ntfy1.arn }
+        { name = "NTFY_WEBHOOK_URL", valueFrom = aws_secretsmanager_secret.ntfy1.arn },
+        { name = "NTFY_TOPIC", valueFrom = aws_secretsmanager_secret.ntfy_topic.arn },
+        { name = "NTFY_SERVER_URL", valueFrom = aws_secretsmanager_secret.ntfy_server_url.arn }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -225,6 +227,28 @@ resource "aws_secretsmanager_secret_version" "ntfy1" {
   secret_string = var.ntfy_webhook_value
 }
 
+# Secrets Manager secret for ntfy topic
+resource "aws_secretsmanager_secret" "ntfy_topic" {
+  name        = "trendradar/ntfy_topic"
+  description = "ntfy topic for notifications"
+}
+
+resource "aws_secretsmanager_secret_version" "ntfy_topic" {
+  secret_id     = aws_secretsmanager_secret.ntfy_topic.id
+  secret_string = var.ntfy_topic
+}
+
+# Secrets Manager secret for ntfy server URL
+resource "aws_secretsmanager_secret" "ntfy_server_url" {
+  name        = "trendradar/ntfy_server_url"
+  description = "ntfy server URL for notifications"
+}
+
+resource "aws_secretsmanager_secret_version" "ntfy_server_url" {
+  secret_id     = aws_secretsmanager_secret.ntfy_server_url.id
+  secret_string = var.ntfy_server_url
+}
+
 # IAM role used by ECS tasks for execution (pull images, write logs, etc.)
 resource "aws_iam_role" "exec" {
   name = "trendradar-ecs-exec"
@@ -253,9 +277,13 @@ resource "aws_iam_policy" "exec_secret_read" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
-        Resource = aws_secretsmanager_secret.ntfy1.arn
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
+        Resource = [
+          aws_secretsmanager_secret.ntfy1.arn,
+          aws_secretsmanager_secret.ntfy_topic.arn,
+          aws_secretsmanager_secret.ntfy_server_url.arn
+        ]
       }
     ]
   })
@@ -288,9 +316,13 @@ resource "aws_iam_policy" "task_secret_read" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
-        Resource = aws_secretsmanager_secret.ntfy1.arn
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
+        Resource = [
+          aws_secretsmanager_secret.ntfy1.arn,
+          aws_secretsmanager_secret.ntfy_topic.arn,
+          aws_secretsmanager_secret.ntfy_server_url.arn
+        ]
       }
     ]
   })
@@ -379,6 +411,18 @@ variable "vpc_id" {
 variable "ntfy_webhook_value" {
   type        = string
   description = "ntfy webhook/topic URL secret string"
+  sensitive   = true
+}
+
+variable "ntfy_topic" {
+  type        = string
+  description = "ntfy topic for notifications"
+  sensitive   = true
+}
+
+variable "ntfy_server_url" {
+  type        = string
+  description = "ntfy server URL for notifications"
   sensitive   = true
 }
 

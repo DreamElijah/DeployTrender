@@ -54,6 +54,8 @@ jobs:
         run: terraform plan -no-color -input=false -out=tfplan
         env:
           TF_VAR_ntfy_webhook_value: ${{ secrets.NTFY_WEBHOOK_URL }}
+          TF_VAR_ntfy_topic: ${{ secrets.NTFY_TOPIC }}
+          TF_VAR_ntfy_server_url: ${{ secrets.NTFY_SERVER_URL }}
 
       - name: Save Plan Artifact
         uses: actions/upload-artifact@v4
