@@ -1,5 +1,18 @@
 # ---------------------- VPC Endpoints for ECR ----------------------
 
+# CloudWatch Logs endpoint (for ECS to send logs)
+resource "aws_vpc_endpoint" "logs" {
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.region}.logs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.private_subnets
+  security_group_ids  = [aws_security_group.crawler.id]
+  private_dns_enabled = true
+  tags = {
+    Name = "logs-endpoint"
+  }
+}
+
 # ECR API endpoint (for ECR API calls)
 resource "aws_vpc_endpoint" "ecr_api" {
   vpc_id              = var.vpc_id
