@@ -54,6 +54,7 @@ RUN set -ex && \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY config/ /app/config/
 COPY main.py .
 COPY docker/manage.py .
 
