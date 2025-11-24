@@ -41,6 +41,14 @@ jobs:
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Tag image as latest
+        run: |
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Push latest tag to ECR
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
       - name: Image digest
         run: |
           docker inspect $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --format '{{.Id}}'
