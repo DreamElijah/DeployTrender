@@ -13,7 +13,7 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_TAG: latest
 
 jobs:
   build-and-push:
@@ -35,17 +35,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -f docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -f docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
 
       - name: Push Docker image to ECR
-        run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-      - name: Tag image as latest
-        run: |
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-      - name: Push latest tag to ECR
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
