@@ -146,7 +146,7 @@ resource "aws_iam_role_policy_attachment" "exec_ecs" {
 resource "aws_iam_policy" "exec_secret_read" {
   name        = "trendradar-exec-secret-read"
   description = "Allow ECS execution role to read ntfy1 secret value"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
