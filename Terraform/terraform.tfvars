@@ -6,4 +6,4 @@ private_subnets = [
   "subnet-0522e7d64bc53cb8c"
 ]
 
-ntfy_webhook_value = "https://ntfy.sh/My-Dreamntfy-Subject-616"
+ntfy_webhook_value = "https://ntfy.sh/My-DreamNtfy-Subject-616"
