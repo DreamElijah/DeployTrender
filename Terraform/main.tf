@@ -90,12 +90,25 @@ resource "aws_security_group" "crawler" {
   description = "Security group for trendradar crawler Fargate task"
   vpc_id      = var.vpc_id
 
+  # Allow HTTPS from within the VPC (for VPC endpoint communication)
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.aws_vpc.selected.cidr_block)}"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+# Data source to get the VPC CIDR block
+data "aws_vpc" "selected" {
+  id = var.vpc_id
 }
 
 # Secrets Manager secret for ntfy webhook / topic URL
